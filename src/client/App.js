@@ -2,9 +2,8 @@ import React, { Component } from 'react'
 import {applyMiddleware, combineReducers, createStore} from 'redux'
 import {connect, Provider} from 'react-redux'
 import {call, fork, put, takeEvery} from 'redux-saga/effects'
-import createSagaMiddleware from 'redux-saga'
+import createSagaMiddleware from 'redux-saga';
 import axios from 'axios'
-import io from 'socket.io-client'
 
 import './App.css'
 
@@ -50,14 +49,13 @@ function* watchFetchRequest() {
 }
 
 function addTodoToDataSourceEndpoint(value) {
-  console.log('Value sent to endpoint', value);
+  console.log(value);
   axios.post('http://localhost:3002/todos', value);
 }
 
 function* addTodo(action) {
   yield call(addTodoToDataSourceEndpoint, action.value)
-  /* dispatched by socket callback, instead */
-  //yield put({type: 'fetchTodos'})
+  yield put({type: 'fetchTodos'})
 }
 
 function* watchAddRequest() {
@@ -70,8 +68,6 @@ function* sagas() {
     fork(watchFetchRequest)
   ];
 }
-
-const socket = io('http://localhost:3003'); 
 
 sagaMiddleware.run(sagas);
 
@@ -95,11 +91,6 @@ class Todos extends Component {
 
   componentDidMount() {
     this.props.dispatch({type: 'fetchTodos'});
-
-    socket.on('databaseEvent', event => {
-      console.log('socket ping received...')
-      this.props.dispatch({type: 'fetchTodos'})
-    })
   }
 
   render() {
