@@ -5,7 +5,8 @@ import {
   ApolloClient,
   createNetworkInterface,
   ApolloProvider,
-  graphql
+  graphql,
+  compose
 } from 'react-apollo'
 
 const apolloClient = new ApolloClient({
@@ -79,7 +80,10 @@ const mutation =  gql`
   }
 `
 
-const TodosWithData = graphql(mutation)(graphql(query)(Todos))
+const TodosWithData = compose(
+  graphql(mutation),
+  graphql(query)
+)(Todos)
 
 class App extends Component {
   render() {
