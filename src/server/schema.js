@@ -6,7 +6,8 @@ const {
     GraphQLString,
     GraphQLBoolean,
     GraphQLList,
-    GraphQLSchema
+    GraphQLSchema,
+    GraphQLNonNull
 } = graphql
 
 const TodoType = new GraphQLObjectType({
@@ -39,6 +40,31 @@ const RootQuery = new GraphQLObjectType({
     }
 })
 
+const Mutations = new GraphQLObjectType({
+    name: 'mutation',
+    fields: {
+        addTodo: {
+            type: TodoType,
+            args: {
+                text: {
+                    type: new GraphQLNonNull(GraphQLString),
+                },
+                complete: {
+                    type: new GraphQLNonNull(GraphQLBoolean)
+                }
+            },
+            resolve(root, {text, complete}) {
+                return axios.post(`http://localhost:3002/todos/`, {
+                    id: String(Math.random()),
+                    text,
+                    complete
+                }).then(resp => resp.data)
+            }
+        }
+    }
+})
+
 module.exports = new GraphQLSchema({
-    query: RootQuery
+    query: RootQuery,
+    mutation: Mutations
 })
