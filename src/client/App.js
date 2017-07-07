@@ -26,7 +26,7 @@ class Todos extends Component {
 
   onSubmit(event) {
     event.preventDefault()
-    this.props.mutate({
+    this.props.addTodo({
       variables: {
         text: this.state.newTodo,
         complete: false,
@@ -35,6 +35,30 @@ class Todos extends Component {
         {query} //reference to the query defined below
       ]
     }).then(() => console.log('mutation complete'))
+    this.setState({newTodo: ''})
+  }
+
+  onDeleteTodo = id => {
+    this.props.deleteTodo({
+      variables: {
+        id
+      },
+      refetchQueries: [
+        {query} //reference to the query defined below
+      ]
+    })
+  }
+
+  onToggleCompleteTodo = (id, complete) => {
+    this.props.toggleCompleteTodo({
+      variables: {
+        id,
+        complete
+      },
+      refetchQueries: [
+        {query} //reference to the query defined below
+      ]
+    })
   }
 
   render() {
@@ -47,13 +71,19 @@ class Todos extends Component {
         <h3>Todos</h3>
         <ul>
           {todos.map(todo => (
-            <li key={todo.id}>{todo.text}</li>
+            <li 
+              style={{color: todo.complete ? 'green' : 'red'}}
+              key={todo.id}
+            >
+              <span onClick={() => this.onToggleCompleteTodo(todo.id, todo.complete)}>{todo.text}</span> 
+              <span onClick={() => this.onDeleteTodo(todo.id)}>[X]</span>
+            </li>
           ))}
         </ul>
 
         <form onSubmit={this.onSubmit.bind(this)}>
           <label>Add Todo:</label>
-          <input value={this.props.newTodo} onChange={event => this.setState({newTodo: event.target.value})} />
+          <input value={this.state.newTodo} onChange={event => this.setState({newTodo: event.target.value})} />
         </form>
       </div>
     )
@@ -70,7 +100,7 @@ const query = gql`
   }
 `
 
-const mutation =  gql`
+const addTodoMutation =  gql`
   mutation addTodo($text: String!, $complete: Boolean!) {
     addTodo(text: $text, complete: $complete) {
       id
@@ -79,9 +109,30 @@ const mutation =  gql`
     }
   }
 `
+const deleteTodoMutation =  gql`
+  mutation deleteTodo($id: String!) {
+    deleteTodo(id: $id) {
+      id
+      text
+      complete
+    }
+  }
+`
+
+const toggleCompleteTodoMutation =  gql`
+  mutation toggleCompleteTodo($id: String!, $complete: Boolean!) {
+    toggleCompleteTodo(id: $id, complete: $complete) {
+      id
+      text
+      complete
+    }
+  }
+`
 
 const TodosWithData = compose(
-  graphql(mutation),
+  graphql(addTodoMutation, { name: 'addTodo' }),
+  graphql(deleteTodoMutation, { name: 'deleteTodo' }),
+  graphql(toggleCompleteTodoMutation, { name: 'toggleCompleteTodo' }),
   graphql(query)
 )(Todos)
 

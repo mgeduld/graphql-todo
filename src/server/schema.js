@@ -60,6 +60,33 @@ const Mutations = new GraphQLObjectType({
                     complete
                 }).then(resp => resp.data)
             }
+        },
+        deleteTodo: {
+            type: TodoType,
+            args: {
+                id: {
+                    type: new GraphQLNonNull(GraphQLString)
+                }
+            },
+            resolve(root, {id}){
+                axios.delete(`http://localhost:3002/todos/${id}`)
+                    .then(resp => resp.data)
+            }
+        },
+        toggleCompleteTodo: {
+            type: TodoType,
+            args: {
+                id: {
+                    type: new GraphQLNonNull(GraphQLString)
+                },
+                complete: {
+                    type: new GraphQLNonNull(GraphQLBoolean)
+                }
+            },
+            resolve(root, {id, complete}){
+                axios.patch(`http://localhost:3002/todos/${id}`, {complete: !complete})
+                    .then(resp => resp.data)
+            }
         }
     }
 })
