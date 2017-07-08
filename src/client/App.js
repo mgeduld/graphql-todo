@@ -8,12 +8,42 @@ import {
   graphql,
   compose
 } from 'react-apollo'
+import {propType} from 'graphql-anywhere'
 
 const apolloClient = new ApolloClient({
   networkInterface: createNetworkInterface({
     uri: 'http://localhost:3001/graphql'
   })
 })
+
+class Todo extends Component {
+
+  static fragments = {
+    todoParts: gql`
+      fragment TodoParts on Todo {
+        id
+        text
+        complete
+      }
+    `
+  }
+
+  static propTypes = {
+    todo: propType(Todo.fragments.todoParts).isRequired
+  }
+
+  render() {
+    const {todo, onToggleCompleteTodo, onDeleteTodo} = this.props;
+    return (
+      <li 
+        style={{color: todo.complete ? 'green' : 'red'}}
+      >
+        <span onClick={() => onToggleCompleteTodo(todo.id, todo.complete)}>{todo.text}</span> 
+        <span onClick={() => onDeleteTodo(todo.id)}>[X]</span>
+      </li>
+    )
+  }
+}
 
 class Todos extends Component {
   constructor(props) {
@@ -71,13 +101,12 @@ class Todos extends Component {
         <h3>Todos</h3>
         <ul>
           {todos.map(todo => (
-            <li 
-              style={{color: todo.complete ? 'green' : 'red'}}
+            <Todo
               key={todo.id}
-            >
-              <span onClick={() => this.onToggleCompleteTodo(todo.id, todo.complete)}>{todo.text}</span> 
-              <span onClick={() => this.onDeleteTodo(todo.id)}>[X]</span>
-            </li>
+              todo={todo} 
+              onToggleCompleteTodo={this.onToggleCompleteTodo}
+              onDeleteTodo={this.onDeleteTodo}
+            />
           ))}
         </ul>
 
@@ -93,11 +122,10 @@ class Todos extends Component {
 const query = gql`
   {
     todos {
-      id
-      text
-      complete
+      ...TodoParts
     }
   }
+  ${Todo.fragments.todoParts}
 `
 
 const addTodoMutation =  gql`
