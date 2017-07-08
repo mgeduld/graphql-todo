@@ -3,11 +3,6 @@
     {
       "id": "1",
       "text": "Destroy Tokyo",
-      "complete": false
-    },
-    {
-      "id": "2",
-      "text": "Destroy NYC",
       "complete": true
     },
     {
@@ -16,23 +11,13 @@
       "complete": false
     },
     {
-      "id": "0.19675035982486655",
-      "text": "Destroy Chicago",
+      "id": "0.14570646051936387",
+      "text": "Destroy Berlin",
       "complete": true
     },
     {
-      "id": "0.0635712260365302",
-      "text": "Destroy Indianapolis",
-      "complete": false
-    },
-    {
-      "id": "0.14570646051936387",
-      "text": "Destroy Berlin",
-      "complete": false
-    },
-    {
-      "id": "0.16831777525520342",
-      "text": "Destroy the moon",
+      "id": "0.3817912440216922",
+      "text": "Destroy Canada",
       "complete": false
     }
   ]

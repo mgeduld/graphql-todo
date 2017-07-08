@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
 import './App.css'
 import {
   gql,
@@ -9,12 +10,31 @@ import {
   compose
 } from 'react-apollo'
 import {propType} from 'graphql-anywhere'
+import {createStore, combineReducers, applyMiddleware} from 'redux'
 
 const apolloClient = new ApolloClient({
   networkInterface: createNetworkInterface({
     uri: 'http://localhost:3001/graphql'
   })
 })
+
+//// REDUX ////
+const operations = (state = 0, action) => {
+  return action.type === 'newOp' ? state + 1 : state
+}
+
+const reduxStore = createStore(
+  combineReducers({
+    operations,
+    apollo: apolloClient.reducer()
+  }),
+  {}, // initial state
+  compose(
+      applyMiddleware(apolloClient.middleware()),
+      // If you are using the devToolsExtension, you can add it here also
+      (typeof window.__REDUX_DEVTOOLS_EXTENSION__ !== 'undefined') ? window.__REDUX_DEVTOOLS_EXTENSION__() : f => f,
+  )
+)
 
 class Todo extends Component {
 
@@ -54,6 +74,8 @@ class Todos extends Component {
     }
   }
 
+  getNewOpAction = () => ({type: 'newOp'})
+
   onSubmit(event) {
     event.preventDefault()
     this.props.addTodo({
@@ -66,6 +88,7 @@ class Todos extends Component {
       ]
     }).then(() => console.log('mutation complete'))
     this.setState({newTodo: ''})
+    this.props.dispatch(this.getNewOpAction())
   }
 
   onDeleteTodo = id => {
@@ -77,6 +100,7 @@ class Todos extends Component {
         {query} //reference to the query defined below
       ]
     })
+    this.props.dispatch(this.getNewOpAction())
   }
 
   onToggleCompleteTodo = (id, complete) => {
@@ -89,6 +113,7 @@ class Todos extends Component {
         {query} //reference to the query defined below
       ]
     })
+    this.props.dispatch(this.getNewOpAction())
   }
 
   render() {
@@ -98,7 +123,7 @@ class Todos extends Component {
     }
     return  (
       <div>
-        <h3>Todos</h3>
+        <h3>Todos (operations: {this.props.operations})</h3>
         <ul>
           {todos.map(todo => (
             <Todo
@@ -164,11 +189,17 @@ const TodosWithData = compose(
   graphql(query)
 )(Todos)
 
+const mapStateToProps = state => {
+  return {operations: state.operations}
+}
+
+const TodoWithDataAndState = connect(mapStateToProps)(TodosWithData)
+
 class App extends Component {
   render() {
     return (
-      <ApolloProvider client={apolloClient}>
-        <TodosWithData />
+      <ApolloProvider store={reduxStore} client={apolloClient}>
+        <TodoWithDataAndState />
       </ApolloProvider>
     )
   }
